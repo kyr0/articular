@@ -1,6 +1,6 @@
-import { AbstractModuleOptions } from "../module/AbstractModule";
-import { EffectOptions } from "./EffectOptions";
+import { AbstractModuleOptions } from './AbstractModuleOptions';
+import { FXModule } from './FXModule';
 
 export interface EffectRackOptions extends AbstractModuleOptions {
-    effects?: Array<EffectOptions<any>>;
+    modules?: Array<FXModule<any>>;
 }

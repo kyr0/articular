@@ -7,6 +7,7 @@ import { Note } from '../interface/Note';
 import { AbstractModule } from './AbstractModule';
 
 export class Metal extends AbstractModule<MetalOptions> {
+    readonly gainNode = new Tone.Gain();
     readonly toneNode = new Tone.MetalSynth();
 
     protected prevNote?: Note;

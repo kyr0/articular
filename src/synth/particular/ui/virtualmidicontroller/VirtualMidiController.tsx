@@ -161,6 +161,9 @@ export const Instrument = memo(
 
         const onKeyDown = useCallback(
             (event: KeyboardEvent) => {
+                if (!event.repeat) {
+                    console.log('onKeyDown');
+                }
                 if (isRegularKey(event) && !event.repeat) {
                     const note = getNoteFromKeyboardKey(event.key);
                     if (note) {
@@ -175,11 +178,14 @@ export const Instrument = memo(
 
         const stopPlayingNote = useCallback(
             (note: any) => {
-                setNotesPlaying(({ notesPlaying }: any) => ({
-                    notesPlaying: notesPlaying.filter((notePlaying: any) => notePlaying !== note),
-                    stopNotes: notesPlaying.filter((notePlaying: any) => notePlaying === note),
-                    startNotes: [],
-                }));
+                setNotesPlaying(({ notesPlaying }: any) => {
+                    console.log('notesPlaying', notesPlaying);
+                    return {
+                        notesPlaying: notesPlaying.filter((notePlaying: any) => notePlaying !== note),
+                        stopNotes: notesPlaying.filter((notePlaying: any) => notePlaying === note),
+                        startNotes: [],
+                    };
+                });
             },
             [setNotesPlaying],
         );
@@ -262,10 +268,12 @@ export const VirtualMidiController = memo(() => {
         O: 'C#4',
         L: 'D4',
         P: 'D#4',
+        /* doesn't work in chrome on mac
         Ö: 'E4',
         Ä: 'F4',
         '+': 'F#4',
         '#': 'G4',
+        */
     });
 
     const renderPianoKey = useCallback(

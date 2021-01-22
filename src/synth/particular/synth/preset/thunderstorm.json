@@ -1,0 +1,372 @@
+{
+    "id": "thunderstorm",
+    "name": "Thunderstorm",
+    "options": {
+        "masterGain": 0.7540643951493758,
+        "noise": {
+            "enabled": true,
+            "enableRoutingFX": false,
+            "enableRoutingFilter": false,
+            "noise": {
+                "type": "pink"
+            },
+            "pan": 0,
+            "envelope": {
+                "attack": 0.1,
+                "decay": 0.1,
+                "sustain": 1,
+                "attackCurve": "linear",
+                "release": 0.1,
+                "releaseCurve": "linear"
+            },
+            "volume": 0.1283739231678539
+        },
+        "sub": {
+            "enabled": true,
+            "oscillator": {
+                "type": "sine"
+            },
+            "envelope": {
+                "attack": 1,
+                "decay": 0.2,
+                "sustain": 0.7141387619319375,
+                "release": 0.8
+            },
+            "octave": -2,
+            "pan": 0,
+            "waveForm": "pwm",
+            "detune": 0,
+            "volume": 0.6016523856036223,
+            "enableRoutingFX": true,
+            "enableRoutingFilter": false
+        },
+        "oscA": {
+            "enabled": true,
+            "enableRoutingFX": true,
+            "enableRoutingFilter": true,
+            "pan": 0,
+            "envelope": {
+                "attack": 2.802668368540998,
+                "decay": 3.7874633335516874,
+                "sustain": 0.5864497849607974,
+                "release": 3.822426972938426
+            },
+            "octave": -2,
+            "spread": 0,
+            "unison": 1,
+            "modulationIndex": 0,
+            "harmonicity": 0.5,
+            "advancedModulationType": "none",
+            "subModulationType": "square",
+            "detune": 3,
+            "waveTablePosition": 0,
+            "waveForm": "custom",
+            "oscillator": {
+                "type": "custom",
+                "phase": 0,
+                "partials": [
+                    0.6366197723675814,
+                    -0.3183098861837907,
+                    0.2122065907891938,
+                    -0.15915494309189535,
+                    0.12732395447351627,
+                    -0.1061032953945969,
+                    0.09094568176679733,
+                    -0.07957747154594767,
+                    0.0707355302630646,
+                    -0.06366197723675814,
+                    0.057874524760689224,
+                    -0.05305164769729845,
+                    0.048970751720583176,
+                    -0.04547284088339867,
+                    0.04244131815783876,
+                    -0.039788735772973836,
+                    0.03744822190397537,
+                    -0.0353677651315323,
+                    0.033506303808820075,
+                    -0.03183098861837907,
+                    0.03031522725559911,
+                    -0.028937262380344612,
+                    0.027679120537720932
+                ]
+            },
+            "volume": 0.345265270238217
+        },
+        "oscB": {
+            "enabled": true,
+            "enableRoutingFX": true,
+            "enableRoutingFilter": true,
+            "pan": 0,
+            "octave": 0,
+            "unison": 2,
+            "envelope": {
+                "attack": 1,
+                "decay": 0.2,
+                "sustain": 0.6309280821739297,
+                "release": 0.8
+            },
+            "modulationIndex": 0.4705410426678982,
+            "harmonicity": 2.1881496606418938,
+            "advancedModulationType": "fat",
+            "subModulationType": "sawtooth",
+            "detune": -12,
+            "waveTablePosition": 0,
+            "spread": 10.613929432329963,
+            "waveForm": "triangle",
+            "oscillator": {
+                "type": "sawtooth",
+                "phase": 0
+            },
+            "volume": 0.5
+        },
+        "metal": {
+            "enabled": false,
+            "enableRoutingFX": false,
+            "enableRoutingFilter": false,
+            "detune": 0,
+            "pan": 0,
+            "envelope": {
+                "attack": 1,
+                "decay": 0.2,
+                "sustain": 0.85,
+                "release": 0.8
+            },
+            "harmonicity": 0.5,
+            "modulationIndex": 0,
+            "octaves": 3,
+            "volume": 0.2
+        },
+        "pluck": {
+            "enabled": false,
+            "enableRoutingFX": false,
+            "enableRoutingFilter": false,
+            "pan": 0,
+            "envelope": {
+                "attack": 1,
+                "decay": 0.2,
+                "sustain": 0.85,
+                "release": 3
+            },
+            "attackNoise": 1,
+            "dampening": 4000,
+            "release": 2,
+            "octave": 0,
+            "resonance": 1,
+            "volume": 0.4
+        },
+        "lfo1": {
+            "enabled": true,
+            "frequency": 2.0121767882897217,
+            "min": 200,
+            "max": 800
+        },
+        "lfo2": {
+            "enabled": true,
+            "frequency": 4.62,
+            "min": 400,
+            "max": 1000
+        },
+        "lfo3": {
+            "enabled": true,
+            "frequency": 0.1,
+            "min": 1,
+            "max": 100
+        },
+        "lfo4": {
+            "enabled": true,
+            "frequency": 0.1,
+            "min": 1,
+            "max": 100
+        },
+        "matrix": {
+            "routes": [
+                {
+                    "source": {
+                        "type": "lfo",
+                        "id": "lfo1"
+                    },
+                    "target": {
+                        "module": "masterFilter",
+                        "signalId": "frequency"
+                    }
+                },
+                {
+                    "source": {
+                        "type": "lfo",
+                        "id": "lfo2"
+                    },
+                    "target": {
+                        "module": "lfo1",
+                        "signalId": "amount"
+                    }
+                },
+                {
+                    "source": {
+                        "type": "lfo",
+                        "id": "lfo1"
+                    },
+                    "target": {
+                        "module": "masterFilter",
+                        "signalId": "frequency"
+                    }
+                },
+                {
+                    "source": {
+                        "type": "lfo",
+                        "id": "lfo2"
+                    },
+                    "target": {
+                        "module": "lfo1",
+                        "signalId": "amount"
+                    }
+                }
+            ]
+        },
+        "effectRack": {
+            "enabled": true,
+            "volume": 1,
+            "modules": [
+                {
+                    "name": "reverb",
+                    "label": "ᚡ Conv Reverb",
+                    "enabled": true,
+                    "config": {},
+                    "index": 0
+                },
+                {
+                    "name": "compressor",
+                    "label": "ᛞ Compressor",
+                    "enabled": false,
+                    "config": {},
+                    "index": 1
+                },
+                {
+                    "name": "distortion",
+                    "label": "ᚣ Amp Distortion",
+                    "enabled": false,
+                    "config": {},
+                    "index": 2
+                },
+                {
+                    "name": "wah",
+                    "label": "ᛉ Wah",
+                    "enabled": true,
+                    "config": {},
+                    "index": 3
+                },
+                {
+                    "name": "bitcrusher",
+                    "label": "ᛔ BitCrusher",
+                    "enabled": false,
+                    "config": {},
+                    "index": 4
+                },
+                {
+                    "name": "chebyshev",
+                    "label": "ᛈ Cheby Distortion",
+                    "enabled": false,
+                    "config": {},
+                    "index": 5
+                },
+                {
+                    "name": "chorus",
+                    "label": "ᛰ Chorus",
+                    "enabled": false,
+                    "config": {},
+                    "index": 6
+                },
+                {
+                    "name": "feedbackdelay",
+                    "label": "ᛨ Feedback Delay",
+                    "enabled": false,
+                    "config": {},
+                    "index": 7
+                },
+                {
+                    "name": "freeverb",
+                    "label": "ᚠ FreeVerb",
+                    "enabled": false,
+                    "config": {},
+                    "index": 8
+                },
+                {
+                    "name": "jcreverb",
+                    "label": "ᚥ JCReverb",
+                    "enabled": false,
+                    "config": {},
+                    "index": 9
+                },
+                {
+                    "name": "frequencyshifter",
+                    "label": "ᛇ FreqShifter",
+                    "enabled": false,
+                    "config": {},
+                    "index": 10
+                },
+                {
+                    "name": "phaser",
+                    "label": "ᚹ Phaser",
+                    "enabled": false,
+                    "config": {},
+                    "index": 11
+                },
+                {
+                    "name": "pingpongdelay",
+                    "label": "ᛵ PingPongDelay",
+                    "enabled": false,
+                    "config": {},
+                    "index": 12
+                },
+                {
+                    "name": "pitchshift",
+                    "label": "ᚦ PitchShifter",
+                    "enabled": false,
+                    "config": {},
+                    "index": 13
+                },
+                {
+                    "name": "stereowidener",
+                    "label": "ᛸ StereoWidener",
+                    "enabled": false,
+                    "config": {},
+                    "index": 14
+                },
+                {
+                    "name": "tremolo",
+                    "label": "ᛠ Tremolo",
+                    "enabled": false,
+                    "config": {},
+                    "index": 15
+                },
+                {
+                    "name": "vibrato",
+                    "label": "ᚸ Vibrato",
+                    "enabled": true,
+                    "config": {},
+                    "index": 16
+                },
+                {
+                    "name": "eq3",
+                    "label": "ᛊ EQ3",
+                    "enabled": false,
+                    "config": {},
+                    "index": 17
+                }
+            ]
+        },
+        "masterFilter": {
+            "enabled": true,
+            "volume": 1,
+            "drive": 0.4204934887232497,
+            "resonance": 3.202203624586692,
+            "cutoff": 681.2323371180784,
+            "detune": 0,
+            "rolloff": -12,
+            "type": "lowpass"
+        },
+        "voicing": {
+            "glide": 0.1
+        },
+        "envelope": {}
+    }
+}

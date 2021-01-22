@@ -47,12 +47,16 @@ export const PresetSelector = () => {
                 filterOptions={(options, params) => {
                     const filtered = filter(options, params);
 
+                    const newPreset = {
+                        id: params.inputValue.toLowerCase(),
+                        name: params.inputValue,
+                        options: optionsContext!,
+                    };
+
+                    console.log('newPreset', JSON.stringify(newPreset, null, 4));
+
                     if (params.inputValue !== '') {
-                        filtered.push({
-                            id: Date.now() + '-preset',
-                            name: params.inputValue,
-                            options: optionsContext!,
-                        });
+                        filtered.push(newPreset);
                     }
                     return filtered;
                 }}

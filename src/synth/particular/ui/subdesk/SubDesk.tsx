@@ -6,7 +6,6 @@ import React, { useCallback, useContext } from 'react';
 import { OptionsBusContext } from '../../bus/OptionsBusManager';
 import { OptionsContext } from '../../Particular';
 import { LFO } from './lfo/LFO';
-import { Pluck } from './pluck/Pluck';
 import { getClasses } from './SubDesk.jss';
 import { Voicing } from './voicing/Voicing';
 
@@ -19,9 +18,7 @@ export const SubDesk = () => {
     return (
         <div className={classes.root}>
             <Grid container spacing={1}>
-                <Grid item xs={3}>
-                    <Pluck />
-                </Grid>
+                <Grid item xs={3}></Grid>
                 <Grid item xs={2}>
                     <LFO lfoName="lfo1" />
                 </Grid>

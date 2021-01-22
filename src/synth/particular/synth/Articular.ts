@@ -19,6 +19,13 @@ import { Pluck } from './module/Pluck';
 import { PolySynth } from './module/PolySynth';
 import { SubSynth } from './module/SubSynth';
 import { initPreset } from './preset/initPreset';
+import thunderstorm from './preset/thunderstorm.json';
+import thunderpad from './preset/thunderpad.json';
+import stab from './preset/stab.json';
+import { deepDiff } from './function/deepDiff';
+import * as _ from 'lodash';
+import { hasChanges } from './function/hasChanges';
+import { clearScreenDown } from 'readline';
 
 export enum GlobalSignals {
     MASTER = 'masterGain',
@@ -77,6 +84,14 @@ export class Articular implements NoteReceiver {
 
     getSignal(module: Module, signalId: string): Tone.Signal | undefined {
         switch (module) {
+            case Module.LFO1:
+                return this.lfo1.getSignal(signalId);
+            case Module.LFO2:
+                return this.lfo2.getSignal(signalId);
+            case Module.LFO3:
+                return this.lfo3.getSignal(signalId);
+            case Module.LFO4:
+                return this.lfo4.getSignal(signalId);
             case Module.OSC_A:
                 return this.oscA.getSignal(signalId);
             case Module.OSC_B:
@@ -118,14 +133,21 @@ export class Articular implements NoteReceiver {
     }
 
     getPresets(): { [presetId: string]: Preset } {
+        const thunderstormPreset = (thunderstorm as unknown) as Preset;
+        const thunderpadPreset = (thunderpad as unknown) as Preset;
+        const stabPreset = (stab as unknown) as Preset;
         return {
             ['init']: initPreset,
+            [stabPreset.id]: stabPreset,
+            [thunderstormPreset.id]: thunderstormPreset,
+            [thunderpadPreset.id]: thunderpadPreset,
             // TODO: add more built-in presets
         };
     }
 
     setupStaticRoutes() {
         // effectRack output -> masterFilter input
+        // masterFilter internally routes to Tone.destination if disabled
         this.effectRack.setDestination(this.masterFilter.inputGainNode);
 
         // masterFilter output -> masterGain input
@@ -189,44 +211,110 @@ export class Articular implements NoteReceiver {
         this.lfo4.stopForNote(note);
     }
 
+    connectModuleDynamicallyRouted(module: any, enableRoutingFX: boolean) {
+        if (module && enableRoutingFX) {
+            module.disable();
+            console.log('connectModuleDynamicallyRouted -> effectRack', module);
+            module.setDestination(this.effectRack.inputGainNode);
+            module.enable();
+        } else if (module) {
+            module.disable();
+            console.log('connectModuleDynamicallyRouted -> masterFiter directly', module);
+            module.setDestination(this.masterFilter.inputGainNode);
+            module.enable();
+        } else {
+            console.warn('[Articular] connectDynamicallyRouted(): Module does not exist');
+        }
+    }
+
     set(options: RecursivePartial<ArticularOptions>) {
         console.log('[Articular] set options', options);
 
-        // TODO: Route to effect when effect is enabled, else to filter, if filter enabled, else to destination
-        // all sound generators output -> effectRack input (parallel)
-        this.oscA.setDestination(this.effectRack.inputGainNode);
-        this.oscB.setDestination(this.effectRack.inputGainNode);
-        this.sub.setDestination(this.effectRack.inputGainNode);
-        this.noise.setDestination(this.effectRack.inputGainNode);
-        this.metal.setDestination(this.effectRack.inputGainNode);
-        this.pluck.setDestination(this.effectRack.inputGainNode);
+        this.connectModuleDynamicallyRouted(this.oscA, options.oscA?.enableRoutingFX || false);
+        this.connectModuleDynamicallyRouted(this.oscB, options.oscB?.enableRoutingFX || false);
+        this.connectModuleDynamicallyRouted(this.sub, options.sub?.enableRoutingFX || false);
+        this.connectModuleDynamicallyRouted(this.noise, options.noise?.enableRoutingFX || false);
+        this.connectModuleDynamicallyRouted(this.metal, options.metal?.enableRoutingFX || false);
+        this.connectModuleDynamicallyRouted(this.pluck, options.pluck?.enableRoutingFX || false);
 
         this.options = mergeOptions(this.options, options as ArticularOptions)!;
 
-        console.log('[Articular] new options', this.options);
+        console.log('[Articular] new options', JSON.stringify(this.options, null, 4));
 
-        this.oscA.set({ ...this.options.oscA, ...this.options.voicing });
-        this.oscB.set({ ...this.options.oscB, ...this.options.voicing });
-        this.sub.set({ ...this.options.sub, ...this.options.voicing });
-        this.noise.set(this.options.noise);
-        this.metal.set({ ...this.options.metal, ...this.options.voicing });
-        this.pluck.set(this.options.pluck);
+        const oldOscAConfig = { ...this.oscA.get(), ...this.options.voicing };
+        const newOscAConfig = { ...this.options.oscA, ...this.options.voicing };
+        if (hasChanges(oldOscAConfig, newOscAConfig)) {
+            console.log('Setting oscA changes...');
+            this.oscA.set(newOscAConfig);
+        }
 
-        this.lfo1.set(this.options.lfo1);
-        this.lfo2.set(this.options.lfo2);
-        this.lfo3.set(this.options.lfo3);
-        this.lfo4.set(this.options.lfo4);
+        const oldOscBConfig = { ...this.oscB.get(), ...this.options.voicing };
+        const newOscBConfig = { ...this.options.oscB, ...this.options.voicing };
+        if (hasChanges(oldOscBConfig, newOscBConfig)) {
+            console.log('Setting oscB changes...', newOscBConfig);
+            this.oscB.set(newOscBConfig);
+        }
 
-        this.masterFilter.set(this.options.masterFilter);
+        const oldSubConfig = { ...this.sub.get(), ...this.options.voicing };
+        const newSubConfig = { ...this.options.sub, ...this.options.voicing };
+        if (hasChanges(oldSubConfig, newSubConfig)) {
+            console.log('Setting sub changes...');
+            this.sub.set(newSubConfig);
+        }
 
-        this.effectRack.set(this.options.effectRack);
+        if (hasChanges(this.noise.get(), this.options.noise)) {
+            console.log('Setting noise changes...');
+            this.noise.set(this.options.noise);
+        }
+
+        const oldMetalConfig = { ...this.metal.get(), ...this.options.voicing };
+        const newMetalConfig = { ...this.options.metal, ...this.options.voicing };
+        if (hasChanges(oldMetalConfig, newMetalConfig)) {
+            console.log('Setting metal changes...');
+            this.metal.set(newMetalConfig);
+        }
+
+        if (hasChanges(this.pluck.get(), this.options.pluck)) {
+            console.log('Setting pluck changes...');
+            this.pluck.set(this.options.pluck);
+        }
+
+        if (hasChanges(this.lfo1.get(), this.options.lfo1)) {
+            console.log('Setting lfo1 changes...');
+            this.lfo1.set(this.options.lfo1);
+        }
+
+        if (hasChanges(this.lfo2.get(), this.options.lfo2)) {
+            console.log('Setting lfo2 changes...');
+            this.lfo2.set(this.options.lfo2);
+        }
+
+        if (hasChanges(this.lfo3.get(), this.options.lfo3)) {
+            console.log('Setting lfo3 changes...');
+            this.lfo3.set(this.options.lfo3);
+        }
+
+        if (hasChanges(this.lfo4.get(), this.options.lfo4)) {
+            console.log('Setting lfo4 changes...');
+            this.lfo4.set(this.options.lfo4);
+        }
+
+        if (hasChanges(this.masterFilter.get(), this.options.masterFilter)) {
+            console.log('Setting masterFilter changes...');
+            this.masterFilter.set(this.options.masterFilter);
+        }
+
+        if (this.options.effectRack) {
+            console.log('Setting effectRack changes...');
+            this.effectRack.set(this.options.effectRack);
+        }
 
         this.masterGainNode.gain.rampTo(this.options.masterGain, 0.1, Tone.now());
     }
 
-    addSignalRoute(signalRoute: SignalRoute) {
+    addSignalRoute(signalRoute: SignalRoute, ignoreDoubleCheck?: boolean) {
+        if (this.hasSignalRoute(signalRoute) && !ignoreDoubleCheck) return;
         console.log('addSignalRoute', signalRoute, this.options?.matrix);
-        if (this.hasSignalRoute(signalRoute)) return;
 
         let source;
         const targetSignal = this.getSignal(signalRoute.target.module, signalRoute.target.signalId);
@@ -238,17 +326,17 @@ export class Articular implements NoteReceiver {
             console.log('targetSignal after connect', targetSignal);
 
             // add to options
-            this.options?.matrix.push(signalRoute);
+            this.options?.matrix.routes.push(signalRoute);
         } else {
             console.error('signalRoute not of type LFO or no targetSignal found!');
         }
     }
 
     hasSignalRoute(signalRoute: SignalRoute): boolean {
-        if (!this.options?.matrix || this.options.matrix.length === 0) return false;
+        if (!this.options?.matrix || this.options.matrix.routes.length === 0) return false;
 
-        for (let i = 0; i < this.options?.matrix.length; i++) {
-            const _signalRoute = this.options?.matrix[i];
+        for (let i = 0; i < this.options?.matrix.routes.length; i++) {
+            const _signalRoute = this.options?.matrix.routes[i];
             if (
                 _signalRoute.source.id === signalRoute.source.id &&
                 _signalRoute.source.type === signalRoute.source.type &&

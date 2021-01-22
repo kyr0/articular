@@ -1,20 +1,28 @@
 import { Checkbox, debounce, Typography } from '@material-ui/core';
 import Grid from '@material-ui/core/Grid';
 import React, { useCallback, useContext, useRef, useState } from 'react';
-import { OptionsBusContext } from '../../../bus/OptionsBusManager';
-import { OptionsContext } from '../../../Particular';
-import { getClasses } from './Metal.jss';
-import { getClasses as getUiClasses } from '../../UI.jss';
-import { useSyncConfig } from '../../hook/useSyncConfig';
+import { OptionsBusContext } from '../../../../bus/OptionsBusManager';
+import { OptionsContext } from '../../../../Particular';
+import { getClasses } from './Pluck.jss';
+import { getClasses as getUiClasses } from '../../../UI.jss';
+import { useSyncConfig } from '../../../hook/useSyncConfig';
 import TextField from '@material-ui/core/TextField';
+import ToggleButton from '@material-ui/lab/ToggleButton';
+import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup';
+import { WaveForm } from '../../../../synth/interface/Waveform';
 import * as skins from 'react-rotary-knob-skin-pack';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Switch from '@material-ui/core/Switch';
 import { Knob } from 'react-rotary-knob';
+import Select from '@material-ui/core/Select';
+import MenuItem from '@material-ui/core/MenuItem';
+import { NoiseType } from '../../../../synth/interface/NoiseType';
 import Paper from '@material-ui/core/Paper';
 
-export const Metal = () => {
+export const Pluck = () => {
+    const classes = getClasses();
     const uiClasses = getUiClasses();
+    const parentRef = useRef(null);
 
     const optionsContext = useContext(OptionsContext);
     const optionsBusContext = useContext(OptionsBusContext);
@@ -22,14 +30,14 @@ export const Metal = () => {
     const onSetDebounced = useCallback(
         (param: string, debounceTime: number, childKey?: string) =>
             debounce((value: any) => {
-                useSyncConfig(optionsBusContext, 'metal', param, value, childKey);
+                useSyncConfig(optionsBusContext, 'pluck', param, value, childKey);
             }, debounceTime),
         [optionsBusContext],
     );
 
     const onSwitch = useCallback(
         (param: string, childKey?: string) => (event: React.ChangeEvent<HTMLInputElement>) => {
-            useSyncConfig(optionsBusContext, 'metal', param, event.target.checked, childKey);
+            useSyncConfig(optionsBusContext, 'pluck', param, event.target.checked, childKey);
         },
         [optionsBusContext],
     );
@@ -43,20 +51,9 @@ export const Metal = () => {
         [],
     );
 
-    // === DETUNE
-
-    const syncDetune = onSetDebounced('detune', 1);
-
-    const onDetuneChange = useCallback(
-        () => (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-            syncDetune(parseInt(event.target.value, 10) || 0);
-        },
-        [],
-    );
-
     // === VOLUME / LEVEL
 
-    const [volume, setVolume] = useState(optionsContext!.metal.volume! || 0.5);
+    const [volume, setVolume] = useState(optionsContext!.noise.volume! || 0.5);
     const syncVolume = onSetDebounced('volume', 25);
 
     const onVolumeChange = useCallback(
@@ -69,7 +66,7 @@ export const Metal = () => {
 
     // === PAN
 
-    const [pan, setPan] = useState<number>((optionsContext?.metal as any).pan || 0);
+    const [pan, setPan] = useState<number>((optionsContext?.noise as any).pan || 0);
     const syncPan = onSetDebounced('pan', 1);
 
     const onPanChange = useCallback(
@@ -80,73 +77,88 @@ export const Metal = () => {
         [setPan],
     );
 
-    // === HARMONICITY
+    // === ATTACK NOISE
 
-    const [harmonicity, setHarmonicity] = useState<number>((optionsContext!.metal as any).harmonicity || 1);
-    const syncHarmonicity = onSetDebounced('harmonicity', 1);
+    const [attackNoise, setAttackNoise] = useState<number>((optionsContext?.pluck as any).attackNoise || 0);
+    const syncAttackNoise = onSetDebounced('attackNoise', 1);
 
-    const onHarmonicityChange = useCallback(
-        () => (harmonicity: number) => {
-            setHarmonicity(harmonicity / 100);
-            syncHarmonicity(harmonicity / 100);
+    const onAttackNoiseChange = useCallback(
+        () => (attackNoise: number) => {
+            setAttackNoise(attackNoise);
+            syncAttackNoise(attackNoise);
         },
-        [setHarmonicity],
+        [setAttackNoise],
     );
 
-    // === MODULATION INDEX
+    // === DAMPENING FREQUENCY
 
-    const [modulationIndex, setModulationIndex] = useState<number>((optionsContext!.metal as any).modulationIndex || 0);
-    const syncModulationIndex = onSetDebounced('modulationIndex', 1);
+    const [dampening, setDampening] = useState<number>((optionsContext?.pluck as any).dampening || 0);
+    const syncDampening = onSetDebounced('dampening', 1);
 
-    const onModulationIndexChange = useCallback(
-        () => (modulationIndex: number) => {
-            setModulationIndex(modulationIndex / 100);
-            syncModulationIndex(modulationIndex / 100);
+    const onDampeningChange = useCallback(
+        () => (dampening: number) => {
+            setDampening(dampening);
+            syncDampening(dampening);
         },
-        [setModulationIndex],
+        [setDampening],
     );
 
-    // === OCTAVES
+    // === RELEASE TIME
 
-    const [octaves, setOctaves] = useState<number>((optionsContext!.metal as any).octaves || 0);
-    const syncOctaves = onSetDebounced('octaves', 1);
+    const [release, setRelease] = useState<number>((optionsContext?.pluck as any).release || 0);
+    const syncRelease = onSetDebounced('release', 1);
 
-    const onOctavesChange = useCallback(
-        () => (octaves: number) => {
-            setOctaves(octaves);
-            syncOctaves(octaves);
+    const onReleaseChange = useCallback(
+        () => (release: number) => {
+            setRelease(release);
+            syncRelease(release);
         },
-        [setOctaves],
+        [setRelease],
+    );
+
+    // === OCTAVE
+
+    const syncOctave = onSetDebounced('octave', 1);
+
+    const onOctaveChange = useCallback(
+        () => (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+            syncOctave(parseInt(event.target.value, 10) || 0);
+        },
+        [],
     );
 
     return (
         <Paper elevation={3} className={uiClasses.paper}>
             <Grid container>
                 <Grid container className={uiClasses.moduleHeaderContainer}>
-                    <Grid item xs={6} className={uiClasses.moduleHeader}>
+                    <Grid item xs={8} className={uiClasses.moduleHeader}>
                         <Checkbox
-                            checked={optionsContext?.metal?.enabled}
+                            checked={optionsContext?.pluck?.enabled}
                             className={uiClasses.smallCheckbox}
                             onChange={onSwitchConnected()}
                         />
                         <Typography variant="button" className={uiClasses.moduleHeaderText}>
-                            METAL
+                            PLUCK
                         </Typography>
                     </Grid>
-                    <Grid item xs={6} className={`${uiClasses.shiftRight} ${uiClasses.moduleHeaderActions}`}>
+
+                    <Grid item xs={4} className={`${uiClasses.shiftRight} ${uiClasses.moduleHeaderActions}`}>
                         <TextField
-                            label="CENTS"
+                            label="OCT"
                             variant="outlined"
                             type="number"
-                            value={optionsContext?.metal?.detune}
                             InputProps={{
                                 inputProps: {
-                                    min: -1200,
-                                    max: 1200,
+                                    min: -4,
+                                    max: 4,
                                 },
                             }}
-                            onChange={onDetuneChange()}
-                            className={`${uiClasses.smallNumberField} ${uiClasses.detuneField}`}
+                            style={{
+                                width: 35,
+                            }}
+                            value={optionsContext?.pluck?.octave}
+                            onChange={onOctaveChange()}
+                            className={uiClasses.smallNumberField}
                             InputLabelProps={{
                                 shrink: true,
                             }}
@@ -154,19 +166,19 @@ export const Metal = () => {
                     </Grid>
                 </Grid>
 
-                <Grid container style={{ marginTop: 3 }}>
+                <Grid container>
                     <Grid item xs={4}>
                         <Knob
                             unlockDistance={0}
                             preciseMode={true}
-                            defaultValue={harmonicity * 100}
-                            min={0}
+                            defaultValue={attackNoise}
+                            min={0.1}
+                            step={0.1}
                             skin={skins.s12}
-                            step={0.01}
-                            max={1200}
+                            max={20}
                             className={uiClasses.knob}
-                            value={harmonicity * 100}
-                            onChange={onHarmonicityChange()}
+                            value={attackNoise}
+                            onChange={onAttackNoiseChange()}
                             rotateDegrees={180}
                             style={{
                                 width: '35px',
@@ -174,43 +186,21 @@ export const Metal = () => {
                             }}
                         />
                         <Typography variant="caption" className={uiClasses.smallCaption}>
-                            HARMONICITY
+                            NOISE
                         </Typography>
                     </Grid>
                     <Grid item xs={4}>
                         <Knob
                             unlockDistance={0}
                             preciseMode={true}
-                            defaultValue={modulationIndex * 100}
+                            defaultValue={dampening}
                             min={0}
-                            skin={skins.s12}
-                            step={0.01}
-                            max={5000}
-                            className={uiClasses.knob}
-                            value={modulationIndex * 100}
-                            onChange={onModulationIndexChange()}
-                            rotateDegrees={180}
-                            style={{
-                                width: '35px',
-                                height: '35px',
-                            }}
-                        />
-                        <Typography variant="caption" className={uiClasses.smallCaption}>
-                            MOD.
-                        </Typography>
-                    </Grid>
-                    <Grid item xs={4}>
-                        <Knob
-                            unlockDistance={0}
-                            preciseMode={true}
-                            defaultValue={octaves}
-                            min={1}
-                            skin={skins.s12}
                             step={1}
-                            max={6}
+                            skin={skins.s12}
+                            max={7000}
                             className={uiClasses.knob}
-                            value={octaves}
-                            onChange={onOctavesChange()}
+                            value={dampening}
+                            onChange={onDampeningChange()}
                             rotateDegrees={180}
                             style={{
                                 width: '35px',
@@ -218,18 +208,109 @@ export const Metal = () => {
                             }}
                         />
                         <Typography variant="caption" className={uiClasses.smallCaption}>
-                            OCTAVES
+                            DAMP (Hz)
+                        </Typography>
+                    </Grid>
+                    <Grid item xs={4}>
+                        <Knob
+                            unlockDistance={0}
+                            preciseMode={true}
+                            defaultValue={release}
+                            min={0}
+                            step={0.1}
+                            skin={skins.s12}
+                            max={2}
+                            className={uiClasses.knob}
+                            value={release}
+                            onChange={onReleaseChange()}
+                            rotateDegrees={180}
+                            style={{
+                                width: '35px',
+                                height: '35px',
+                            }}
+                        />
+                        <Typography variant="caption" className={uiClasses.smallCaption}>
+                            RELEASE (sec)
                         </Typography>
                     </Grid>
                 </Grid>
 
-                <Grid container style={{ marginTop: 5 }}>
+                <Grid container>
+                    <Grid item xs={4}>
+                        <Knob
+                            unlockDistance={0}
+                            preciseMode={true}
+                            defaultValue={attackNoise}
+                            min={0.1}
+                            step={0.1}
+                            skin={skins.s12}
+                            max={20}
+                            className={uiClasses.knob}
+                            value={attackNoise}
+                            onChange={onAttackNoiseChange()}
+                            rotateDegrees={180}
+                            style={{
+                                width: '35px',
+                                height: '35px',
+                            }}
+                        />
+                        <Typography variant="caption" className={uiClasses.smallCaption}>
+                            NOISE
+                        </Typography>
+                    </Grid>
+                    <Grid item xs={4}>
+                        <Knob
+                            unlockDistance={0}
+                            preciseMode={true}
+                            defaultValue={dampening}
+                            min={0}
+                            step={1}
+                            skin={skins.s12}
+                            max={7000}
+                            className={uiClasses.knob}
+                            value={dampening}
+                            onChange={onDampeningChange()}
+                            rotateDegrees={180}
+                            style={{
+                                width: '35px',
+                                height: '35px',
+                            }}
+                        />
+                        <Typography variant="caption" className={uiClasses.smallCaption}>
+                            DAMP (Hz)
+                        </Typography>
+                    </Grid>
+                    <Grid item xs={4}>
+                        <Knob
+                            unlockDistance={0}
+                            preciseMode={true}
+                            defaultValue={release}
+                            min={0}
+                            step={0.1}
+                            skin={skins.s12}
+                            max={2}
+                            className={uiClasses.knob}
+                            value={release}
+                            onChange={onReleaseChange()}
+                            rotateDegrees={180}
+                            style={{
+                                width: '35px',
+                                height: '35px',
+                            }}
+                        />
+                        <Typography variant="caption" className={uiClasses.smallCaption}>
+                            RELEASE (sec)
+                        </Typography>
+                    </Grid>
+                </Grid>
+
+                <Grid container>
                     <Grid item xs={4}>
                         <div className={uiClasses.routing}>
                             <FormControlLabel
                                 control={
                                     <Switch
-                                        checked={optionsContext?.metal.enableRoutingFX}
+                                        checked={optionsContext?.pluck.enableRoutingFX}
                                         onChange={onSwitch('enableRoutingFX')}
                                         color="primary"
                                     />
@@ -240,7 +321,7 @@ export const Metal = () => {
                             <FormControlLabel
                                 control={
                                     <Switch
-                                        checked={optionsContext?.metal.enableRoutingFilter}
+                                        checked={optionsContext?.pluck.enableRoutingFilter}
                                         onChange={onSwitch('enableRoutingFilter')}
                                         color="primary"
                                     />

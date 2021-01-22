@@ -13,7 +13,7 @@ function App() {
                 justifyContent: 'center',
             }}
         >
-            <div style={{ width: '80vw', margin: 'auto' }}>
+            <div style={{ width: '80vw', height: 900, margin: 'auto' }}>
                 <Particular instanceId={'particular-1'} />
             </div>
         </div>

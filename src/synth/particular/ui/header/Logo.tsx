@@ -7,7 +7,9 @@ export const Logo = () => {
 
     return (
         <div className={classes.root}>
-            <Typography className={classes.logoText}>ARTICULAR</Typography>
+            <Typography className={classes.logoText}>
+                🔊 <strong>ART</strong>ICULAR
+            </Typography>
             <Typography className={classes.logoSlogan}>
                 POLYPHONIC WEB SYNTH
                 <br />

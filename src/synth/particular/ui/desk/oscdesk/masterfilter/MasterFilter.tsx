@@ -3,33 +3,35 @@ import ToggleButton from '@material-ui/lab/ToggleButton';
 import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup';
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { Knob } from 'react-rotary-knob';
-import { OptionsBusContext, EVENT_OPTIONS_CHANGED } from '../../../bus/OptionsBusManager';
-import { EVENT_SIGNAL_CONNECT, SignalsBusContext } from '../../../bus/SignalsBusManager';
-import { ArticularContext, OptionsContext } from '../../../Particular';
+import { OptionsBusContext, EVENT_OPTIONS_CHANGED } from '../../../../bus/OptionsBusManager';
+import { EVENT_SIGNAL_CONNECT, SignalsBusContext } from '../../../../bus/SignalsBusManager';
+import { ArticularContext, OptionsContext } from '../../../../Particular';
 import * as skins from 'react-rotary-knob-skin-pack';
 import { getClasses } from './MasterFilter.jss';
-import { getClasses as getUiClasses } from '../../UI.jss';
-import { ArticularOptions } from '../../../synth/interface/ArticularOptions';
-import { debounce } from '../../../synth/function/debounce';
-import { RecursivePartial } from '../../../synth/interface/RecursivePartial';
-import { mergeOptions } from '../../../synth/function/mergeOptions';
-import { WaveForm } from '../../../synth/interface/Waveform';
+import { getClasses as getUiClasses } from '../../../UI.jss';
+import { ArticularOptions } from '../../../../synth/interface/ArticularOptions';
+import { debounce } from '../../../../synth/function/debounce';
+import { RecursivePartial } from '../../../../synth/interface/RecursivePartial';
+import { mergeOptions } from '../../../../synth/function/mergeOptions';
+import { WaveForm } from '../../../../synth/interface/Waveform';
 import { PWMOscillatorOptions } from 'tone';
-import { useSyncConfig } from '../../hook/useSyncConfig';
+import { useSyncConfig } from '../../../hook/useSyncConfig';
 import Select from '@material-ui/core/Select';
 import MenuItem from '@material-ui/core/MenuItem';
-import { Rolloff } from '../../../synth/interface/Rolloff';
-import { enumToArray } from '../../function/enumToArray';
-import { FilterType } from '../../../synth/interface/FilterType';
+import { Rolloff } from '../../../../synth/interface/Rolloff';
+import { enumToArray } from '../../../function/enumToArray';
+import { FilterType } from '../../../../synth/interface/FilterType';
 import { useDrop } from 'react-dnd';
-import { GlobalSignals } from '../../../synth/Articular';
-import { Module } from '../../../synth/interface/Module';
-import { MasterFilerSignals } from '../../../synth/module/MasterFilter';
+import { Module } from '../../../../synth/interface/Module';
+import useResizeObserver from 'use-resize-observer';
+import { useLatest, useUpdate } from 'react-use';
+
+const defaultCutoff = 0;
 
 export const MasterFilter = () => {
     const classes = getClasses();
     const uiClasses = getUiClasses();
-    const parentRef = useRef(null);
+    const { ref: resizeRef, width = 1, height = 1 } = useResizeObserver<HTMLDivElement>();
 
     const articular = useContext(ArticularContext);
     const optionsContext = useContext(OptionsContext);
@@ -56,9 +58,14 @@ export const MasterFilter = () => {
         [optionsBusContext],
     );
 
-    const [cutoff, setCutoff] = useState<number>((optionsContext?.masterFilter as any).cutoff || 0);
+    const [cutoff, setCutoff] = useState<number>((optionsContext!['masterFilter'] as any).cutoff || defaultCutoff);
     const syncCutoff = onSetDebounced('cutoff', 1);
 
+    useEffect(() => {
+        setCutoff(optionsContext?.masterFilter.cutoff || defaultCutoff);
+    }, [optionsContext?.masterFilter.cutoff]);
+
+    console.log('cutoff', cutoff);
     const onCutoffChange = useCallback(
         () => (cutoff: number) => {
             setCutoff(cutoff);
@@ -67,7 +74,7 @@ export const MasterFilter = () => {
         [setCutoff],
     );
 
-    const [drive, setDrive] = useState<number>((optionsContext?.masterFilter as any).drive || 0);
+    const [drive, setDrive] = useState<number>((optionsContext!['masterFilter'] as any).drive || 0);
     const syncDrive = onSetDebounced('drive', 1);
 
     const onDriveChange = useCallback(
@@ -78,7 +85,7 @@ export const MasterFilter = () => {
         [setDrive],
     );
 
-    const [resonance, setResonance] = useState<number>((optionsContext?.masterFilter as any).resonance || 0);
+    const [resonance, setResonance] = useState<number>((optionsContext!['masterFilter'] as any).resonance || 0);
     const syncResonance = onSetDebounced('resonance', 1);
 
     const onResonanceChange = useCallback(
@@ -92,7 +99,7 @@ export const MasterFilter = () => {
     // === TYPE
 
     const syncType = onSetDebounced('type', 1);
-    const [type, setType] = useState(optionsContext?.masterFilter?.type);
+    const [type, setType] = useState((optionsContext!['masterFilter'] as any).type);
 
     const onTypeChange = useCallback(
         () => (event: React.ChangeEvent<any>, value: any) => {
@@ -105,7 +112,7 @@ export const MasterFilter = () => {
     // === TYPE
 
     const syncRolloff = onSetDebounced('rolloff', 1);
-    const [rolloff, setRolloff] = useState<number>(optionsContext?.masterFilter?.rolloff as number);
+    const [rolloff, setRolloff] = useState<number>((optionsContext!['masterFilter'] as any).rolloff as number);
 
     const onRolloffChange = useCallback(
         () => (event: React.ChangeEvent<any>, value: any) => {
@@ -151,7 +158,7 @@ export const MasterFilter = () => {
                     { x: 0, y: 50 },
                 ]);
         }
-    }, [cutoff, type, parentRef, rolloff]);
+    }, [cutoff, type, width, rolloff]);
 
     const dragTargetCutoff = useRef<HTMLDivElement | null>(null);
     const [, drop] = useDrop({
@@ -250,11 +257,11 @@ export const MasterFilter = () => {
                     <Grid
                         item
                         xs={12}
-                        ref={parentRef}
+                        ref={resizeRef}
                         className={uiClasses.width100}
-                        style={{ height: 100, paddingTop: 50 }}
+                        style={{ height: 125, paddingTop: 0 }}
                     >
-                        <LineChart parentRef={parentRef} data={chartData} />
+                        <LineChart height={height} width={width} data={chartData} />
                     </Grid>
                 </Grid>
                 <Grid container>
@@ -360,26 +367,26 @@ export const MasterFilter = () => {
     );
 };
 
-const getTicks = (count: number, max: number) => {
-    return [...Array(count).keys()].map((d: any) => {
-        return (max / (count - 1)) * parseInt(d);
-    });
-};
+export interface GraphPoint {
+    x: number;
+    y: number;
+}
 
-export const LineChart = ({ data, parentRef }: any) => {
-    let WIDTH = 100;
-    if (parentRef.current as HTMLElement) {
-        console.log('parentRef.current.offsetWidth', parentRef.current.offsetWidth);
-        WIDTH = parentRef.current.offsetWidth;
-    }
+export interface EnvelopeGraphProps {
+    data: Array<GraphPoint>;
+    height: number;
+    width: number;
+}
+
+export const LineChart = ({ data, width }: EnvelopeGraphProps) => {
+    const WIDTH = width;
     const classes = getClasses();
-    console.log('parentRef', parentRef.current);
     const HEIGHT = 120;
     const MAX_X = Math.max(...data.map((d: any) => d.x));
     const MAX_Y = Math.max(...data.map((d: any) => d.y));
 
     const x = (val: number) => (val / MAX_X) * WIDTH;
-    const y = (val: number) => HEIGHT - (val / MAX_Y) * HEIGHT;
+    const y = (val: number) => HEIGHT - (val / MAX_Y) * HEIGHT + 50;
 
     const d = `
         M${x(data[0].x)} ${y(data[0].y)} 
@@ -397,10 +404,27 @@ export const LineChart = ({ data, parentRef }: any) => {
             style={{
                 width: WIDTH + 'px',
                 height: HEIGHT + 'px',
+                backgroundColor: 'rgba(0,0,0,0.5)',
             }}
         >
             <svg className={classes.svg} width={WIDTH} height={HEIGHT}>
                 <path d={d} />
+
+                {data.map((point, index) =>
+                    index > 0 && index < data.length - 1 ? (
+                        <circle
+                            key={point.x + point.y + Math.random()}
+                            cx={x(point.x)}
+                            cy={y(point.y)}
+                            r="2"
+                            stroke="white"
+                            strokeWidth="1"
+                            fill="white"
+                        />
+                    ) : (
+                        <></>
+                    ),
+                )}
             </svg>
         </div>
     );

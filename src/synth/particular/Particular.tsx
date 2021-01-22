@@ -16,6 +16,11 @@ import { SignalRoute } from './synth/interface/SignalRoute';
 import { EVENT_NOTE_OFF, EVENT_NOTE_ON, NoteBusContext } from './bus/NoteBusManager';
 import { Note } from './synth/interface/Note';
 
+import * as Tone from 'tone';
+import { sign } from 'crypto';
+import { ToneConstantSource } from 'tone/build/esm/signal/ToneConstantSource';
+import { useUpdate } from 'react-use';
+
 export interface ParticularState {
     masterVolume: number;
 }
@@ -53,7 +58,15 @@ export const Particular = ({
         // create an instance of the synth backend
         const localArticular = new Articular(enableDirectMidiInput, enableDirectKeyboardInput, isConnected, presetId);
         setArticular(localArticular);
-        setArticularOptions(localArticular.getCurrentPreset()?.options);
+
+        const options = localArticular.getCurrentPreset()?.options;
+        setArticularOptions(options);
+
+        if (options?.matrix && options?.matrix.routes.length) {
+            options?.matrix.routes.forEach((route: RecursivePartial<SignalRoute>) => {
+                localArticular.addSignalRoute(route as SignalRoute, true);
+            });
+        }
     });
 
     useEffectOnce(() => {
@@ -61,7 +74,7 @@ export const Particular = ({
             if (latestArticular.current) {
                 latestArticular.current.set(options as ArticularOptions); // sync synth backend state
                 setArticularOptions(latestArticular.current.get()); // sync local UI state
-                // console.log('ARTICULAR CONFIG', JSON.stringify(latestArticular.current.get(), null, 4));
+                //console.log('ARTICULAR CONFIG', JSON.stringify(latestArticular.current.get(), null, 4));
             }
         });
 

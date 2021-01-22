@@ -1,25 +1,22 @@
 import { Checkbox, debounce, Typography } from '@material-ui/core';
 import Grid from '@material-ui/core/Grid';
 import React, { useCallback, useContext, useRef, useState } from 'react';
-import { OptionsBusContext } from '../../../bus/OptionsBusManager';
-import { OptionsContext } from '../../../Particular';
-import { getClasses } from './Noise.jss';
-import { getClasses as getUiClasses } from '../../UI.jss';
-import { useSyncConfig } from '../../hook/useSyncConfig';
+import { OptionsBusContext } from '../../../../bus/OptionsBusManager';
+import { OptionsContext } from '../../../../Particular';
+import { getClasses } from './Sub.jss';
+import { getClasses as getUiClasses } from '../../../UI.jss';
+import { useSyncConfig } from '../../../hook/useSyncConfig';
 import TextField from '@material-ui/core/TextField';
 import ToggleButton from '@material-ui/lab/ToggleButton';
 import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup';
-import { WaveForm } from '../../../synth/interface/Waveform';
+import { WaveForm } from '../../../../synth/interface/Waveform';
 import * as skins from 'react-rotary-knob-skin-pack';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Switch from '@material-ui/core/Switch';
 import { Knob } from 'react-rotary-knob';
-import Select from '@material-ui/core/Select';
-import MenuItem from '@material-ui/core/MenuItem';
-import { NoiseType } from '../../../synth/interface/NoiseType';
 import Paper from '@material-ui/core/Paper';
 
-export const Noise = () => {
+export const Sub = () => {
     const classes = getClasses();
     const uiClasses = getUiClasses();
     const parentRef = useRef(null);
@@ -30,14 +27,14 @@ export const Noise = () => {
     const onSetDebounced = useCallback(
         (param: string, debounceTime: number, childKey?: string) =>
             debounce((value: any) => {
-                useSyncConfig(optionsBusContext, 'noise', param, value, childKey);
+                useSyncConfig(optionsBusContext, 'sub', param, value, childKey);
             }, debounceTime),
         [optionsBusContext],
     );
 
     const onSwitch = useCallback(
         (param: string, childKey?: string) => (event: React.ChangeEvent<HTMLInputElement>) => {
-            useSyncConfig(optionsBusContext, 'noise', param, event.target.checked, childKey);
+            useSyncConfig(optionsBusContext, 'sub', param, event.target.checked, childKey);
         },
         [optionsBusContext],
     );
@@ -51,9 +48,42 @@ export const Noise = () => {
         [],
     );
 
+    // === OCTAVE
+
+    const syncOctave = onSetDebounced('octave', 1);
+
+    const onOctaveChange = useCallback(
+        () => (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+            syncOctave(parseInt(event.target.value, 10) || 0);
+        },
+        [],
+    );
+
+    // === DETUNE
+
+    const syncDetune = onSetDebounced('detune', 1);
+
+    const onDetuneChange = useCallback(
+        () => (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+            syncDetune(parseInt(event.target.value, 10) || 0);
+        },
+        [],
+    );
+
+    // === WAVE FORM
+
+    const syncWaveForm = onSetDebounced('waveForm', 1);
+
+    const onWaveFormChange = useCallback(
+        () => (event: any, waveForm: string) => {
+            syncWaveForm(waveForm);
+        },
+        [],
+    );
+
     // === VOLUME / LEVEL
 
-    const [volume, setVolume] = useState(optionsContext!.noise.volume! || 0.5);
+    const [volume, setVolume] = useState(optionsContext!.sub.volume! || 0.5);
     const syncVolume = onSetDebounced('volume', 25);
 
     const onVolumeChange = useCallback(
@@ -66,7 +96,7 @@ export const Noise = () => {
 
     // === PAN
 
-    const [pan, setPan] = useState<number>((optionsContext?.noise as any).pan || 0);
+    const [pan, setPan] = useState<number>((optionsContext?.sub as any).pan || 0);
     const syncPan = onSetDebounced('pan', 1);
 
     const onPanChange = useCallback(
@@ -77,46 +107,78 @@ export const Noise = () => {
         [setPan],
     );
 
-    // === NOISE TYPE
-
-    const syncType = onSetDebounced('type', 1, 'noise');
-    const [type, setType] = useState(optionsContext?.noise?.noise?.type);
-
-    const onTypeChange = useCallback(
-        () => (event: React.ChangeEvent<any>, value: any) => {
-            syncType(event.target.value);
-            setType(event.target.value);
-        },
-        [],
-    );
-
     return (
         <Paper elevation={3} className={uiClasses.paper}>
             <Grid container>
                 <Grid container className={uiClasses.moduleHeaderContainer}>
-                    <Grid item xs={6} className={uiClasses.moduleHeader}>
+                    <Grid item xs={4} className={uiClasses.moduleHeader}>
                         <Checkbox
-                            checked={optionsContext?.noise?.enabled}
+                            checked={optionsContext?.sub?.enabled}
                             className={uiClasses.smallCheckbox}
                             onChange={onSwitchConnected()}
                         />
                         <Typography variant="button" className={uiClasses.moduleHeaderText}>
-                            NOISE
+                            SUB
                         </Typography>
                     </Grid>
-                    <Grid item xs={6} className={`${uiClasses.shiftRight} ${uiClasses.moduleHeaderActions}`}>
-                        <Select
+                    <Grid item xs={8} className={`${uiClasses.shiftRight} ${uiClasses.moduleHeaderActions}`}>
+                        <TextField
+                            label="OCT"
                             variant="outlined"
-                            value={type}
-                            className={uiClasses.smallSelect}
-                            onChange={onTypeChange()}
+                            type="number"
+                            InputProps={{
+                                inputProps: {
+                                    min: -4,
+                                    max: 4,
+                                },
+                            }}
+                            style={{
+                                width: 35,
+                            }}
+                            value={optionsContext?.sub?.octave}
+                            onChange={onOctaveChange()}
+                            className={uiClasses.smallNumberField}
+                            InputLabelProps={{
+                                shrink: true,
+                            }}
+                        />
+
+                        <TextField
+                            label="CENTS"
+                            variant="outlined"
+                            type="number"
+                            value={optionsContext?.sub?.detune}
+                            InputProps={{
+                                inputProps: {
+                                    min: -1200,
+                                    max: 1200,
+                                },
+                            }}
+                            onChange={onDetuneChange()}
+                            className={`${uiClasses.smallNumberField} ${uiClasses.detuneField}`}
+                            InputLabelProps={{
+                                shrink: true,
+                            }}
+                        />
+                    </Grid>
+                </Grid>
+
+                <Grid container>
+                    <Grid item xs={12}>
+                        <ToggleButtonGroup
+                            value={optionsContext?.sub!.waveForm}
+                            className={uiClasses.waveformSelector}
+                            exclusive
+                            onChange={onWaveFormChange()}
                         >
-                            {Object.keys(NoiseType).map((key: any) => (
-                                <MenuItem key={key} value={(NoiseType as any)[key]}>
-                                    {(NoiseType as any)[key]}
-                                </MenuItem>
-                            ))}
-                        </Select>
+                            <ToggleButton value={WaveForm.SAWTOOTH}>
+                                <sup style={{ marginTop: -4 }}>႔႔</sup>
+                            </ToggleButton>
+                            <ToggleButton value={WaveForm.SINE}>ᔐ</ToggleButton>
+                            <ToggleButton value={WaveForm.TRIANGLE}>ᄽ</ToggleButton>
+                            <ToggleButton value={WaveForm.PULSE}>ႤႤ</ToggleButton>
+                            <ToggleButton value={WaveForm.PWM}>Ⴄ_Ⴄ</ToggleButton>
+                        </ToggleButtonGroup>
                     </Grid>
                 </Grid>
 
@@ -126,7 +188,7 @@ export const Noise = () => {
                             <FormControlLabel
                                 control={
                                     <Switch
-                                        checked={optionsContext?.noise.enableRoutingFX}
+                                        checked={optionsContext?.sub.enableRoutingFX}
                                         onChange={onSwitch('enableRoutingFX')}
                                         color="primary"
                                     />
@@ -137,7 +199,7 @@ export const Noise = () => {
                             <FormControlLabel
                                 control={
                                     <Switch
-                                        checked={optionsContext?.noise.enableRoutingFilter}
+                                        checked={optionsContext?.sub.enableRoutingFilter}
                                         onChange={onSwitch('enableRoutingFilter')}
                                         color="primary"
                                     />

@@ -5,6 +5,7 @@ import { Note } from '../interface/Note';
 import { AbstractModule } from './AbstractModule';
 
 export class Noise extends AbstractModule<NoiseOptions> {
+    readonly gainNode = new Tone.Gain();
     readonly toneNode: any = new Tone.NoiseSynth();
 
     protected prevNote?: Note;

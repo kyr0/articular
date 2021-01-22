@@ -1,8 +1,8 @@
-declare module "react-rotary-knob" {
+declare module 'react-rotary-knob' {
     export const Knob: any;
 }
 
-declare module "react-rotary-knob-skin-pack" {
+declare module 'react-rotary-knob-skin-pack' {
     export const s1: any;
     export const s2: any;
     export const s3: any;

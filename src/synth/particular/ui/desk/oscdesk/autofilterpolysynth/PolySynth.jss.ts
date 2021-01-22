@@ -32,4 +32,34 @@ export const getClasses = makeStyles(({ palette }: Theme) => ({
     modulationContainerTitle: {
         borderBottom: '3px solid rgba(255,255,255,0.1)',
     },
+    waveformEditButton: {
+        position: 'absolute',
+        right: 0,
+        top: 0,
+        width: 30,
+        maxWidth: 30,
+        minWidth: 30,
+        height: 30,
+        maxHeight: 30,
+        minHeight: 30,
+        padding: 0,
+        '& .MuiTouchRipple-root': {
+            left: 0,
+        },
+    },
+    waveformContainer: {
+        position: 'relative',
+    },
+    waveFormDesignerModal: {
+        maxWidth: '60vw',
+        minWidth: 800,
+        maxHeight: '60vh',
+        minHeight: 600,
+        margin: 'auto',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        backgroundColor: 'rgba(0,0,0,0.9)',
+        border: '2px solid rgba(255,255,255,0.9)',
+    },
 }));

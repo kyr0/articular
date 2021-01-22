@@ -1,25 +1,20 @@
 import { Checkbox, debounce, Typography } from '@material-ui/core';
 import Grid from '@material-ui/core/Grid';
 import React, { useCallback, useContext, useRef, useState } from 'react';
-import { OptionsBusContext } from '../../../bus/OptionsBusManager';
-import { OptionsContext } from '../../../Particular';
-import { getClasses } from './Sub.jss';
-import { getClasses as getUiClasses } from '../../UI.jss';
-import { useSyncConfig } from '../../hook/useSyncConfig';
+import { OptionsBusContext } from '../../../../bus/OptionsBusManager';
+import { OptionsContext } from '../../../../Particular';
+import { getClasses } from './Metal.jss';
+import { getClasses as getUiClasses } from '../../../UI.jss';
+import { useSyncConfig } from '../../../hook/useSyncConfig';
 import TextField from '@material-ui/core/TextField';
-import ToggleButton from '@material-ui/lab/ToggleButton';
-import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup';
-import { WaveForm } from '../../../synth/interface/Waveform';
 import * as skins from 'react-rotary-knob-skin-pack';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Switch from '@material-ui/core/Switch';
 import { Knob } from 'react-rotary-knob';
 import Paper from '@material-ui/core/Paper';
 
-export const Sub = () => {
-    const classes = getClasses();
+export const Metal = () => {
     const uiClasses = getUiClasses();
-    const parentRef = useRef(null);
 
     const optionsContext = useContext(OptionsContext);
     const optionsBusContext = useContext(OptionsBusContext);
@@ -27,14 +22,14 @@ export const Sub = () => {
     const onSetDebounced = useCallback(
         (param: string, debounceTime: number, childKey?: string) =>
             debounce((value: any) => {
-                useSyncConfig(optionsBusContext, 'sub', param, value, childKey);
+                useSyncConfig(optionsBusContext, 'metal', param, value, childKey);
             }, debounceTime),
         [optionsBusContext],
     );
 
     const onSwitch = useCallback(
         (param: string, childKey?: string) => (event: React.ChangeEvent<HTMLInputElement>) => {
-            useSyncConfig(optionsBusContext, 'sub', param, event.target.checked, childKey);
+            useSyncConfig(optionsBusContext, 'metal', param, event.target.checked, childKey);
         },
         [optionsBusContext],
     );
@@ -44,17 +39,6 @@ export const Sub = () => {
     const onSwitchConnected = useCallback(
         () => (event: React.ChangeEvent<any>, value: any) => {
             syncEnabled(event.target.checked);
-        },
-        [],
-    );
-
-    // === OCTAVE
-
-    const syncOctave = onSetDebounced('octave', 1);
-
-    const onOctaveChange = useCallback(
-        () => (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-            syncOctave(parseInt(event.target.value, 10) || 0);
         },
         [],
     );
@@ -70,20 +54,9 @@ export const Sub = () => {
         [],
     );
 
-    // === WAVE FORM
-
-    const syncWaveForm = onSetDebounced('waveForm', 1);
-
-    const onWaveFormChange = useCallback(
-        () => (event: any, waveForm: string) => {
-            syncWaveForm(waveForm);
-        },
-        [],
-    );
-
     // === VOLUME / LEVEL
 
-    const [volume, setVolume] = useState(optionsContext!.sub.volume! || 0.5);
+    const [volume, setVolume] = useState(optionsContext!.metal.volume! || 0.5);
     const syncVolume = onSetDebounced('volume', 25);
 
     const onVolumeChange = useCallback(
@@ -96,7 +69,7 @@ export const Sub = () => {
 
     // === PAN
 
-    const [pan, setPan] = useState<number>((optionsContext?.sub as any).pan || 0);
+    const [pan, setPan] = useState<number>((optionsContext?.metal as any).pan || 0);
     const syncPan = onSetDebounced('pan', 1);
 
     const onPanChange = useCallback(
@@ -107,47 +80,65 @@ export const Sub = () => {
         [setPan],
     );
 
+    // === HARMONICITY
+
+    const [harmonicity, setHarmonicity] = useState<number>((optionsContext!.metal as any).harmonicity || 1);
+    const syncHarmonicity = onSetDebounced('harmonicity', 1);
+
+    const onHarmonicityChange = useCallback(
+        () => (harmonicity: number) => {
+            setHarmonicity(harmonicity / 100);
+            syncHarmonicity(harmonicity / 100);
+        },
+        [setHarmonicity],
+    );
+
+    // === MODULATION INDEX
+
+    const [modulationIndex, setModulationIndex] = useState<number>((optionsContext!.metal as any).modulationIndex || 0);
+    const syncModulationIndex = onSetDebounced('modulationIndex', 1);
+
+    const onModulationIndexChange = useCallback(
+        () => (modulationIndex: number) => {
+            setModulationIndex(modulationIndex / 100);
+            syncModulationIndex(modulationIndex / 100);
+        },
+        [setModulationIndex],
+    );
+
+    // === OCTAVES
+
+    const [octaves, setOctaves] = useState<number>((optionsContext!.metal as any).octaves || 0);
+    const syncOctaves = onSetDebounced('octaves', 1);
+
+    const onOctavesChange = useCallback(
+        () => (octaves: number) => {
+            setOctaves(octaves);
+            syncOctaves(octaves);
+        },
+        [setOctaves],
+    );
+
     return (
         <Paper elevation={3} className={uiClasses.paper}>
             <Grid container>
                 <Grid container className={uiClasses.moduleHeaderContainer}>
-                    <Grid item xs={4} className={uiClasses.moduleHeader}>
+                    <Grid item xs={6} className={uiClasses.moduleHeader}>
                         <Checkbox
-                            checked={optionsContext?.sub?.enabled}
+                            checked={optionsContext?.metal?.enabled}
                             className={uiClasses.smallCheckbox}
                             onChange={onSwitchConnected()}
                         />
                         <Typography variant="button" className={uiClasses.moduleHeaderText}>
-                            SUB
+                            METAL
                         </Typography>
                     </Grid>
-                    <Grid item xs={8} className={`${uiClasses.shiftRight} ${uiClasses.moduleHeaderActions}`}>
-                        <TextField
-                            label="OCT"
-                            variant="outlined"
-                            type="number"
-                            InputProps={{
-                                inputProps: {
-                                    min: -4,
-                                    max: 4,
-                                },
-                            }}
-                            style={{
-                                width: 35,
-                            }}
-                            value={optionsContext?.sub?.octave}
-                            onChange={onOctaveChange()}
-                            className={uiClasses.smallNumberField}
-                            InputLabelProps={{
-                                shrink: true,
-                            }}
-                        />
-
+                    <Grid item xs={6} className={`${uiClasses.shiftRight} ${uiClasses.moduleHeaderActions}`}>
                         <TextField
                             label="CENTS"
                             variant="outlined"
                             type="number"
-                            value={optionsContext?.sub?.detune}
+                            value={optionsContext?.metal?.detune}
                             InputProps={{
                                 inputProps: {
                                     min: -1200,
@@ -163,32 +154,82 @@ export const Sub = () => {
                     </Grid>
                 </Grid>
 
-                <Grid container>
-                    <Grid item xs={12}>
-                        <ToggleButtonGroup
-                            value={optionsContext?.sub!.waveForm}
-                            className={uiClasses.waveformSelector}
-                            exclusive
-                            onChange={onWaveFormChange()}
-                        >
-                            <ToggleButton value={WaveForm.SAWTOOTH}>
-                                <sup style={{ marginTop: -4 }}>႔႔</sup>
-                            </ToggleButton>
-                            <ToggleButton value={WaveForm.SINE}>ᔐ</ToggleButton>
-                            <ToggleButton value={WaveForm.TRIANGLE}>ᄽ</ToggleButton>
-                            <ToggleButton value={WaveForm.PULSE}>ႤႤ</ToggleButton>
-                            <ToggleButton value={WaveForm.PWM}>Ⴄ_Ⴄ</ToggleButton>
-                        </ToggleButtonGroup>
+                <Grid container style={{ marginTop: 3 }}>
+                    <Grid item xs={4}>
+                        <Knob
+                            unlockDistance={0}
+                            preciseMode={true}
+                            defaultValue={harmonicity * 100}
+                            min={0}
+                            skin={skins.s12}
+                            step={0.01}
+                            max={1200}
+                            className={uiClasses.knob}
+                            value={harmonicity * 100}
+                            onChange={onHarmonicityChange()}
+                            rotateDegrees={180}
+                            style={{
+                                width: '35px',
+                                height: '35px',
+                            }}
+                        />
+                        <Typography variant="caption" className={uiClasses.smallCaption}>
+                            HARMONICITY
+                        </Typography>
+                    </Grid>
+                    <Grid item xs={4}>
+                        <Knob
+                            unlockDistance={0}
+                            preciseMode={true}
+                            defaultValue={modulationIndex * 100}
+                            min={0}
+                            skin={skins.s12}
+                            step={0.01}
+                            max={5000}
+                            className={uiClasses.knob}
+                            value={modulationIndex * 100}
+                            onChange={onModulationIndexChange()}
+                            rotateDegrees={180}
+                            style={{
+                                width: '35px',
+                                height: '35px',
+                            }}
+                        />
+                        <Typography variant="caption" className={uiClasses.smallCaption}>
+                            MOD.
+                        </Typography>
+                    </Grid>
+                    <Grid item xs={4}>
+                        <Knob
+                            unlockDistance={0}
+                            preciseMode={true}
+                            defaultValue={octaves}
+                            min={1}
+                            skin={skins.s12}
+                            step={1}
+                            max={6}
+                            className={uiClasses.knob}
+                            value={octaves}
+                            onChange={onOctavesChange()}
+                            rotateDegrees={180}
+                            style={{
+                                width: '35px',
+                                height: '35px',
+                            }}
+                        />
+                        <Typography variant="caption" className={uiClasses.smallCaption}>
+                            OCTAVES
+                        </Typography>
                     </Grid>
                 </Grid>
 
-                <Grid container>
+                <Grid container style={{ marginTop: 5 }}>
                     <Grid item xs={4}>
                         <div className={uiClasses.routing}>
                             <FormControlLabel
                                 control={
                                     <Switch
-                                        checked={optionsContext?.sub.enableRoutingFX}
+                                        checked={optionsContext?.metal.enableRoutingFX}
                                         onChange={onSwitch('enableRoutingFX')}
                                         color="primary"
                                     />
@@ -199,7 +240,7 @@ export const Sub = () => {
                             <FormControlLabel
                                 control={
                                     <Switch
-                                        checked={optionsContext?.sub.enableRoutingFilter}
+                                        checked={optionsContext?.metal.enableRoutingFilter}
                                         onChange={onSwitch('enableRoutingFilter')}
                                         color="primary"
                                     />

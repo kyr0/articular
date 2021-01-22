@@ -2,6 +2,7 @@ import { EffectRackOptions } from './EffectRackOptions';
 import { LFOOptions } from './LFOOptions';
 import { MasterEnvelopeOptions } from './MasterEnvelopeOptions';
 import { MasterFilterOptions } from './MasterFilterOptions';
+import { MatrixOptions } from './MatrixOptions';
 import { MetalOptions } from './MetalOptions';
 import { NoiseOptions } from './NoiseOptions';
 import { PluckOptions } from './PluckOptions';
@@ -19,9 +20,8 @@ export interface ArticularOptions {
     metal: MetalOptions;
     pluck: PluckOptions;
     masterFilter: MasterFilterOptions;
-    envelope: MasterEnvelopeOptions;
     effectRack: EffectRackOptions;
-    matrix: Array<SignalRoute>;
+    matrix: MatrixOptions;
     lfo1: LFOOptions;
     lfo2: LFOOptions;
     lfo3: LFOOptions;

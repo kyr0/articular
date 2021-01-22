@@ -1,7 +1,7 @@
 import { RecursivePartial } from 'tone/build/esm/core/util/Interface';
 import * as Tone from 'tone';
-import { AbstractModuleOptions } from '../module/AbstractModule';
 import { VoicingOptions } from './VoicingOptions';
+import { AbstractModuleOptions } from './AbstractModuleOptions';
 
 export interface MetalOptions extends RecursivePartial<Tone.MetalSynthOptions>, AbstractModuleOptions, VoicingOptions {
     enabled?: boolean;

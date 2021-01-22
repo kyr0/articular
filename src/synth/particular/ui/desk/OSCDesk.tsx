@@ -1,15 +1,15 @@
 import Grid from '@material-ui/core/Grid';
-import React from 'react';
-import { PolySynth } from './autofilterpolysynth/PolySynth';
+import React, { memo } from 'react';
+import { PolySynth } from './oscdesk/autofilterpolysynth/PolySynth';
 import { getClasses } from './OSCDesk.jss';
 import { getClasses as getUiClasses } from '../UI.jss';
-import { MasterFilter } from './masterfilter/MasterFilter';
-import { Sub } from './sub/Sub';
-import { Noise } from './noise/Noise';
-import { Metal } from './metal/Metal';
-import { Envelope } from './envelope/Envelope';
+import { MasterFilter } from './oscdesk/masterfilter/MasterFilter';
+import { Sub } from './oscdesk/sub/Sub';
+import { Noise } from './oscdesk/noise/Noise';
+import { Envelope } from './oscdesk/envelope/Envelope';
+import { Pluck } from './oscdesk/pluck/Pluck';
 
-export const OSCDesk = () => {
+export const OSCDesk = memo(() => {
     const classes = getClasses();
     const uiClasses = getUiClasses();
 
@@ -24,7 +24,7 @@ export const OSCDesk = () => {
                         <Noise />
                     </div>
                     <div style={{ marginTop: 10 }}>
-                        <Metal />
+                        <Pluck />
                     </div>
                 </Grid>
                 <Grid item xs={3}>
@@ -44,4 +44,4 @@ export const OSCDesk = () => {
             </Grid>
         </div>
     );
-};
+});

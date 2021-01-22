@@ -1,12 +1,10 @@
-export const debounce = <T>(fn: Function, ms: number): T => {
-  let timeout: any;
+export const debounce = <T>(fn: any, ms: number): T => {
+    let timeout: any;
 
-  return function () {
-    const delegate = () => fn.apply(
-      // @ts-ignore
-      this, arguments);
+    return (function (...rest: any) {
+        const delegate = () => fn(...rest);
 
-    clearTimeout(timeout);
-    timeout = setTimeout(delegate, ms);
-  } as unknown as T;
-}
+        clearTimeout(timeout);
+        timeout = setTimeout(delegate, ms);
+    } as unknown) as T;
+};

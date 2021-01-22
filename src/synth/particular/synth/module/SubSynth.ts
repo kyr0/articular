@@ -4,6 +4,7 @@ import { SubSynthOptions } from '../interface/SubSynthOptions';
 import { AbstractModule } from './AbstractModule';
 
 export class SubSynth extends AbstractModule<SubSynthOptions> {
+    readonly gainNode = new Tone.Gain();
     readonly toneNode = new Tone.PolySynth({
         maxPolyphony: 64,
     });

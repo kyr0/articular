@@ -1,5 +1,4 @@
-import { useContext } from 'react';
-import { EVENT_OPTIONS_CHANGED, OptionsBusContext } from '../../bus/OptionsBusManager';
+import { EVENT_OPTIONS_CHANGED } from '../../bus/OptionsBusManager';
 import { TinyEventBus } from '../../bus/TinyEventBus';
 
 export const useSyncConfig = (
@@ -24,5 +23,7 @@ export const useSyncConfig = (
             },
         };
     }
+
+    console.log('configObject', configObject);
     optionsBusContext.publish(EVENT_OPTIONS_CHANGED, configObject);
 };

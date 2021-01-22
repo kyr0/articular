@@ -11,6 +11,7 @@ import { Knob } from 'react-rotary-knob';
 import Paper from '@material-ui/core/Paper';
 import { useDrag } from 'react-dnd';
 import TextField from '@material-ui/core/TextField';
+import Tooltip from '@material-ui/core/Tooltip';
 
 export interface LFOProps {
     lfoName: string;
@@ -89,12 +90,16 @@ export const LFO = ({ lfoName }: LFOProps) => {
                         </span>
                     </Grid>
                     <Grid item xs={4} className={`${uiClasses.shiftRight} ${uiClasses.moduleHeaderActions}`}>
-                        <div className={classes.lfoDropTarget} ref={drag}>
-                            🔂
-                        </div>
-                        <div className={classes.dragLink} ref={drag}>
-                            🔗
-                        </div>
+                        <Tooltip title="Drop an LFO signal here to modulate a modulator">
+                            <div className={classes.lfoDropTarget} ref={drag}>
+                                ⚓
+                            </div>
+                        </Tooltip>
+                        <Tooltip title="Drag this LFO signal and drop it on a control to modulate">
+                            <div className={classes.dragLink} ref={drag}>
+                                🔗
+                            </div>
+                        </Tooltip>
                     </Grid>
                 </Grid>
 

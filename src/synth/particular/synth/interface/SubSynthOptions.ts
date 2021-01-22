@@ -1,5 +1,5 @@
 import * as Tone from 'tone';
-import { AbstractModuleOptions } from '../module/AbstractModule';
+import { AbstractModuleOptions } from './AbstractModuleOptions';
 import { RecursivePartial } from './RecursivePartial';
 import { VoicingOptions } from './VoicingOptions';
 import { WaveForm } from './Waveform';

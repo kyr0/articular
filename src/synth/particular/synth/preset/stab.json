@@ -1,0 +1,247 @@
+{
+    "id": "stab",
+    "name": "Stab",
+    "options": {
+        "masterGain": 0.75,
+        "noise": {
+            "enabled": false,
+            "enableRoutingFX": false,
+            "enableRoutingFilter": false,
+            "noise": {
+                "type": "pink"
+            },
+            "pan": 0,
+            "envelope": {
+                "attack": 0.1,
+                "decay": 0.1,
+                "sustain": 1,
+                "attackCurve": "linear",
+                "release": 0.1,
+                "releaseCurve": "linear"
+            },
+            "volume": 0.1
+        },
+        "sub": {
+            "enabled": false,
+            "oscillator": {
+                "type": "sine"
+            },
+            "envelope": {
+                "attack": 1,
+                "decay": 0.2,
+                "sustain": 0.85,
+                "release": 0.8
+            },
+            "octave": -2,
+            "pan": 0,
+            "waveForm": "pwm",
+            "detune": 0,
+            "volume": 0.5,
+            "enableRoutingFX": false,
+            "enableRoutingFilter": false
+        },
+        "oscA": {
+            "enabled": true,
+            "enableRoutingFX": true,
+            "enableRoutingFilter": true,
+            "pan": 0,
+            "envelope": {
+                "attack": 0.010932656815716275,
+                "decay": 3.7874633335516874,
+                "sustain": 0.35120293180781553,
+                "release": 3.822426972938426
+            },
+            "octave": 1,
+            "spread": 25.463488427387205,
+            "unison": 3,
+            "modulationIndex": 0.18201534925526158,
+            "harmonicity": 0.5,
+            "advancedModulationType": "fm",
+            "subModulationType": "triangle",
+            "detune": 3,
+            "waveTablePosition": 0,
+            "waveForm": "custom",
+            "oscillator": {
+                "partials": [
+                    0.6671,
+                    0,
+                    0.4244131815783876,
+                    0,
+                    0.25464790894703254,
+                    0,
+                    0.18189136353359467,
+                    0,
+                    0.1414710605261292,
+                    0,
+                    0.11574904952137845,
+                    0,
+                    0.09794150344116635,
+                    0,
+                    0.08488263631567752,
+                    0,
+                    0.07489644380795074,
+                    0,
+                    0.06701260761764015,
+                    0,
+                    0.06063045451119822,
+                    0,
+                    0.055358241075441864,
+                    0,
+                    0.0382,
+                    0,
+                    0.0082
+                ],
+                "type": "custom",
+                "phase": 0
+            },
+            "volume": 0.345265270238217
+        },
+        "oscB": {
+            "enabled": true,
+            "enableRoutingFX": true,
+            "enableRoutingFilter": true,
+            "pan": 0,
+            "octave": 0,
+            "unison": 2,
+            "envelope": {
+                "attack": 1,
+                "decay": 0.2,
+                "sustain": 0.85,
+                "release": 0.8
+            },
+            "modulationIndex": 0.4705410426678982,
+            "harmonicity": 2.1881496606418938,
+            "advancedModulationType": "fat",
+            "subModulationType": "sawtooth",
+            "detune": -12,
+            "waveTablePosition": 0,
+            "spread": 10.613929432329963,
+            "waveForm": "triangle",
+            "oscillator": {
+                "type": "sawtooth",
+                "phase": 0
+            },
+            "volume": 0.5
+        },
+        "metal": {
+            "enabled": false,
+            "enableRoutingFX": false,
+            "enableRoutingFilter": false,
+            "detune": 0,
+            "pan": 0,
+            "envelope": {
+                "attack": 1,
+                "decay": 0.2,
+                "sustain": 0.85,
+                "release": 0.8
+            },
+            "harmonicity": 0.5,
+            "modulationIndex": 0,
+            "octaves": 3,
+            "volume": 0.2
+        },
+        "pluck": {
+            "enabled": false,
+            "enableRoutingFX": false,
+            "enableRoutingFilter": false,
+            "pan": 0,
+            "envelope": {
+                "attack": 1,
+                "decay": 0.2,
+                "sustain": 0.85,
+                "release": 3
+            },
+            "attackNoise": 1,
+            "dampening": 4000,
+            "release": 2,
+            "octave": 0,
+            "resonance": 1,
+            "volume": 0.4
+        },
+        "lfo1": {
+            "enabled": true,
+            "frequency": 2.0121767882897217,
+            "min": 200,
+            "max": 800
+        },
+        "lfo2": {
+            "enabled": true,
+            "frequency": 4.62,
+            "min": 400,
+            "max": 1000
+        },
+        "lfo3": {
+            "enabled": true,
+            "frequency": 0.1,
+            "min": 1,
+            "max": 100
+        },
+        "lfo4": {
+            "enabled": true,
+            "frequency": 0.1,
+            "min": 1,
+            "max": 100
+        },
+        "matrix": {
+            "routes": [
+                {
+                    "source": {
+                        "type": "lfo",
+                        "id": "lfo1"
+                    },
+                    "target": {
+                        "module": "masterFilter",
+                        "signalId": "frequency"
+                    }
+                },
+                {
+                    "source": {
+                        "type": "lfo",
+                        "id": "lfo2"
+                    },
+                    "target": {
+                        "module": "lfo1",
+                        "signalId": "amount"
+                    }
+                },
+                {
+                    "source": {
+                        "type": "lfo",
+                        "id": "lfo1"
+                    },
+                    "target": {
+                        "module": "masterFilter",
+                        "signalId": "frequency"
+                    }
+                },
+                {
+                    "source": {
+                        "type": "lfo",
+                        "id": "lfo2"
+                    },
+                    "target": {
+                        "module": "lfo1",
+                        "signalId": "amount"
+                    }
+                }
+            ]
+        },
+        "effectRack": {
+            "volume": 1
+        },
+        "envelope": {},
+        "masterFilter": {
+            "enabled": true,
+            "volume": 1,
+            "drive": 0.4204934887232497,
+            "resonance": 3.202203624586692,
+            "cutoff": 1585.254619777323,
+            "detune": 0,
+            "rolloff": -12,
+            "type": "lowpass"
+        },
+        "voicing": {
+            "glide": 0.1
+        }
+    }
+}

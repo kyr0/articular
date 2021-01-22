@@ -7,4 +7,8 @@ export enum Module {
     PLUCK = 'pluck',
     METAL = 'metal',
     GLOBAL = 'global',
+    LFO1 = 'lfo1',
+    LFO2 = 'lfo2',
+    LFO3 = 'lfo3',
+    LFO4 = 'lfo4',
 }

@@ -1,9 +1,9 @@
 import { RecursivePartial } from 'tone/build/esm/core/util/Interface';
 import * as Tone from 'tone';
-import { AbstractModuleOptions } from '../module/AbstractModule';
 import { AdvancedModulationType } from './AdvancedModulationType';
 import { WaveForm } from './Waveform';
 import { VoicingOptions } from './VoicingOptions';
+import { AbstractModuleOptions } from './AbstractModuleOptions';
 
 export interface PolySynthOptions extends RecursivePartial<Tone.SynthOptions>, AbstractModuleOptions, VoicingOptions {
     enabled?: boolean;

@@ -12,6 +12,7 @@ export const getClasses = makeStyles(({ palette }: Theme) => ({
     },
 
     lfoDropTarget: {
+        cursor: 'alias',
         marginRight: 5,
     },
 }));

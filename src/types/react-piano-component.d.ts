@@ -1,3 +1,1 @@
-declare module "react-piano-component" {
-    
-}
+declare module 'react-piano-component' {}

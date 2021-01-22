@@ -1,29 +1,44 @@
-import { Checkbox, Grid, Paper, Slider, TextField, Typography } from '@material-ui/core';
+import { Checkbox, Grid, Modal, Paper, Slider, TextField, Typography } from '@material-ui/core';
 import ToggleButton from '@material-ui/lab/ToggleButton';
 import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup';
-import React, { useCallback, useContext, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { Knob } from 'react-rotary-knob';
-import { OptionsBusContext } from '../../../bus/OptionsBusManager';
-import { OptionsContext } from '../../../Particular';
+import { OptionsBusContext } from '../../../../bus/OptionsBusManager';
+import { OptionsContext } from '../../../../Particular';
 import * as skins from 'react-rotary-knob-skin-pack';
 import { getClasses } from './PolySynth.jss';
-import { getClasses as getUiClasses } from '../../UI.jss';
-import { debounce } from '../../../synth/function/debounce';
-import { WaveForm } from '../../../synth/interface/Waveform';
+import { getClasses as getUiClasses } from '../../../UI.jss';
+import { debounce } from '../../../../synth/function/debounce';
+import { WaveForm } from '../../../../synth/interface/Waveform';
 import FormControlLabel from '@material-ui/core/FormControlLabel/FormControlLabel';
 import Switch from '@material-ui/core/Switch/Switch';
 import RadioGroup from '@material-ui/core/RadioGroup';
 import Radio from '@material-ui/core/Radio';
-import { AdvancedModulationType } from '../../../synth/interface/AdvancedModulationType';
-import { useSyncConfig } from '../../hook/useSyncConfig';
+import { AdvancedModulationType } from '../../../../synth/interface/AdvancedModulationType';
+import { useSyncConfig } from '../../../hook/useSyncConfig';
+import { SineWave } from '../../../component/SineWave';
+import useResizeObserver from 'use-resize-observer';
+import { SAMPLE_COUNT, SAMPLE_RATE } from '../../../constants/WaveForm';
+import { calculateSineCurve } from '../../../function/calculateSineCurve';
+import { useEffectOnce } from 'react-use';
+import { List } from 'immutable';
+import { calculateCustomWaveform } from '../../../function/calculateCustomWaveform';
+import { PolySynthOptions } from '../../../../synth/interface/PolySynthOptions';
+import Button from '@material-ui/core/Button';
+import Fade from '@material-ui/core/Fade';
+import { SineSurface, SinusSurfaceWaveSpacing } from '../../../component/SineSurface';
+import { WaveformDesigner } from '../../../component/waveform-designer/WaveformDesigner';
+import { OscName } from '../../../../synth/interface/OscName';
+import { generatePeriodicWaveCoefficients } from '../../../../synth/function/generatePeriodicWaveCoefficients';
 
 export interface PolySynthProps {
-    oscName: 'oscA' | 'oscB';
+    oscName: OscName;
 }
 
 export const PolySynth = ({ oscName }: PolySynthProps) => {
     const classes = getClasses();
     const uiClasses = getUiClasses();
+    const { ref: resizeRef, width: scopeWidth = 250, height: scopeHeight = 100 } = useResizeObserver<HTMLDivElement>();
 
     const optionsContext = useContext(OptionsContext);
     const optionsBusContext = useContext(OptionsBusContext);
@@ -141,6 +156,10 @@ export const PolySynth = ({ oscName }: PolySynthProps) => {
         [setWaveForm, waveForm],
     );
 
+    useEffect(() => {
+        setWaveForm(optionsContext![oscName]!.waveForm);
+    }, [optionsContext![oscName]!.waveForm]);
+
     // === ADVANCED MODULATION TYPE
 
     const syncAdvancedModulationType = onSet('advancedModulationType');
@@ -239,8 +258,57 @@ export const PolySynth = ({ oscName }: PolySynthProps) => {
         [setPan],
     );
 
+    const [sineWave, setSineWave] = useState<List<number>>();
+    const [customWave, setCustomWave] = useState<List<number>>();
+    const [partialAmplitudes, setPartialAmplitudes] = useState(
+        ((optionsContext![oscName] as PolySynthOptions).oscillator! as any).partials || [1],
+    );
+    const [partialSines, setPartialSines] = useState<List<List<number>>>(List([]));
+
+    useEffect(() => {
+        setPartialAmplitudes(((optionsContext![oscName] as PolySynthOptions).oscillator! as any).partials || [1]);
+    }, [((optionsContext![oscName] as PolySynthOptions).oscillator! as any).partials]);
+
+    useEffect(() => {
+        const coefficients =
+            waveForm === WaveForm.CUSTOM ? partialAmplitudes : generatePeriodicWaveCoefficients(waveForm, 16384 / 2);
+
+        switch (waveForm) {
+            case WaveForm.SINE:
+            case WaveForm.CUSTOM:
+            case WaveForm.SAWTOOTH:
+            case WaveForm.SQUARE:
+            case WaveForm.PULSE:
+            case WaveForm.PWM:
+            case WaveForm.TRIANGLE:
+                const partialSinesArray = coefficients.map((amplitude: number, index: number) =>
+                    calculateSineCurve(440 /* A3 */ * (index + 1), amplitude, 101, SAMPLE_RATE),
+                );
+                const partialSines: List<List<number>> = List(partialSinesArray);
+                setPartialSines(List([...partialSines]));
+                setCustomWave(calculateCustomWaveform(partialSines, 0.8));
+                break;
+        }
+    }, [waveForm, partialAmplitudes]);
+
+    const [waveFormConfigOpen, setWaveFormConfigOpen] = useState(false);
+    const onWaveFormConfigClick = useCallback(
+        () => () => {
+            setWaveFormConfigOpen(!waveFormConfigOpen);
+        },
+        [waveFormConfigOpen],
+    );
+
     return (
         <div className={classes.root}>
+            <WaveformDesigner
+                partialSines={partialSines}
+                customWave={customWave!}
+                oscName={oscName}
+                onClose={onWaveFormConfigClick()}
+                open={waveFormConfigOpen}
+            />
+
             <Paper elevation={3} className={uiClasses.paper}>
                 <Grid container>
                     <Grid item xs={12}>
@@ -298,6 +366,28 @@ export const PolySynth = ({ oscName }: PolySynthProps) => {
                     </Grid>
                     <Grid item xs={12}>
                         <Grid container>
+                            <Grid item xs={12} className={classes.waveformContainer}>
+                                {waveForm === WaveForm.CUSTOM && (
+                                    <Button
+                                        size="small"
+                                        className={classes.waveformEditButton}
+                                        onClick={onWaveFormConfigClick()}
+                                    >
+                                        ⚙️
+                                    </Button>
+                                )}
+                                <div
+                                    style={{ width: '100%', height: 120, backgroundColor: 'rgba(0,0,0,0.5)' }}
+                                    ref={resizeRef}
+                                >
+                                    <SineWave
+                                        sineWaveControlPoints={customWave!}
+                                        width={scopeWidth - 20}
+                                        height={scopeHeight}
+                                    />
+                                </div>
+                            </Grid>
+
                             <Grid item xs={12}>
                                 <ToggleButtonGroup
                                     value={waveForm}
@@ -306,6 +396,7 @@ export const PolySynth = ({ oscName }: PolySynthProps) => {
                                     onChange={onWaveFormChange()}
                                     aria-label="Oscillator type"
                                 >
+                                    <ToggleButton value={WaveForm.CUSTOM}>ܟ</ToggleButton>
                                     <ToggleButton value={WaveForm.SAWTOOTH}>
                                         <sup style={{ marginTop: -4 }}>႔႔</sup>
                                     </ToggleButton>
@@ -319,7 +410,8 @@ export const PolySynth = ({ oscName }: PolySynthProps) => {
                                 optionsContext![oscName].waveForm !== WaveForm.PWM && (
                                     <Grid item xs={12}>
                                         <Typography variant="caption">
-                                            W.T. POS.: {waveTablePosition ? waveTablePosition : '[START]'} / 32
+                                            {waveTablePosition > 0 && <>Waveform harmonic: {waveTablePosition} / 32</>}
+                                            {waveTablePosition === 0 ? 'Native waveform' : ''}
                                         </Typography>
                                         <div className={classes.sliderContainer}>
                                             <Slider
@@ -356,7 +448,7 @@ export const PolySynth = ({ oscName }: PolySynthProps) => {
 
                             {optionsContext![oscName].waveForm === WaveForm.PWM && (
                                 <Grid item xs={12}>
-                                    <Typography variant="caption">MOD. FREQ.: {modulationFrequency} Hz</Typography>
+                                    <Typography variant="caption">PWM MOD. FREQ.: {modulationFrequency} Hz</Typography>
 
                                     <div className={classes.sliderContainer}>
                                         <Slider

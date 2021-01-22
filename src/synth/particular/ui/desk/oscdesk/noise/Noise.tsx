@@ -1,25 +1,25 @@
 import { Checkbox, debounce, Typography } from '@material-ui/core';
 import Grid from '@material-ui/core/Grid';
 import React, { useCallback, useContext, useRef, useState } from 'react';
-import { OptionsBusContext } from '../../../bus/OptionsBusManager';
-import { OptionsContext } from '../../../Particular';
-import { getClasses } from './Pluck.jss';
-import { getClasses as getUiClasses } from '../../UI.jss';
-import { useSyncConfig } from '../../hook/useSyncConfig';
+import { OptionsBusContext } from '../../../../bus/OptionsBusManager';
+import { OptionsContext } from '../../../../Particular';
+import { getClasses } from './Noise.jss';
+import { getClasses as getUiClasses } from '../../../UI.jss';
+import { useSyncConfig } from '../../../hook/useSyncConfig';
 import TextField from '@material-ui/core/TextField';
 import ToggleButton from '@material-ui/lab/ToggleButton';
 import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup';
-import { WaveForm } from '../../../synth/interface/Waveform';
+import { WaveForm } from '../../../../synth/interface/Waveform';
 import * as skins from 'react-rotary-knob-skin-pack';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Switch from '@material-ui/core/Switch';
 import { Knob } from 'react-rotary-knob';
 import Select from '@material-ui/core/Select';
 import MenuItem from '@material-ui/core/MenuItem';
-import { NoiseType } from '../../../synth/interface/NoiseType';
+import { NoiseType } from '../../../../synth/interface/NoiseType';
 import Paper from '@material-ui/core/Paper';
 
-export const Pluck = () => {
+export const Noise = () => {
     const classes = getClasses();
     const uiClasses = getUiClasses();
     const parentRef = useRef(null);
@@ -30,14 +30,14 @@ export const Pluck = () => {
     const onSetDebounced = useCallback(
         (param: string, debounceTime: number, childKey?: string) =>
             debounce((value: any) => {
-                useSyncConfig(optionsBusContext, 'pluck', param, value, childKey);
+                useSyncConfig(optionsBusContext, 'noise', param, value, childKey);
             }, debounceTime),
         [optionsBusContext],
     );
 
     const onSwitch = useCallback(
         (param: string, childKey?: string) => (event: React.ChangeEvent<HTMLInputElement>) => {
-            useSyncConfig(optionsBusContext, 'pluck', param, event.target.checked, childKey);
+            useSyncConfig(optionsBusContext, 'noise', param, event.target.checked, childKey);
         },
         [optionsBusContext],
     );
@@ -77,126 +77,46 @@ export const Pluck = () => {
         [setPan],
     );
 
-    // === ATTACK NOISE
+    // === NOISE TYPE
 
-    const [attackNoise, setAttackNoise] = useState<number>((optionsContext?.pluck as any).attackNoise || 0);
-    const syncAttackNoise = onSetDebounced('attackNoise', 1);
+    const syncType = onSetDebounced('type', 1, 'noise');
+    const [type, setType] = useState(optionsContext?.noise?.noise?.type);
 
-    const onAttackNoiseChange = useCallback(
-        () => (attackNoise: number) => {
-            setAttackNoise(attackNoise);
-            syncAttackNoise(attackNoise);
+    const onTypeChange = useCallback(
+        () => (event: React.ChangeEvent<any>, value: any) => {
+            syncType(event.target.value);
+            setType(event.target.value);
         },
-        [setAttackNoise],
+        [],
     );
 
-    // === DAMPENING FREQUENCY
-
-    const [dampening, setDampening] = useState<number>((optionsContext?.pluck as any).dampening || 0);
-    const syncDampening = onSetDebounced('dampening', 1);
-
-    const onDampeningChange = useCallback(
-        () => (dampening: number) => {
-            setDampening(dampening);
-            syncDampening(dampening);
-        },
-        [setDampening],
-    );
-
-    // === RELEASE TIME
-
-    const [release, setRelease] = useState<number>((optionsContext?.pluck as any).release || 0);
-    const syncRelease = onSetDebounced('release', 1);
-
-    const onReleaseChange = useCallback(
-        () => (release: number) => {
-            setRelease(release);
-            syncRelease(release);
-        },
-        [setRelease],
-    );
     return (
         <Paper elevation={3} className={uiClasses.paper}>
             <Grid container>
                 <Grid container className={uiClasses.moduleHeaderContainer}>
-                    <Grid item xs={12} className={uiClasses.moduleHeader}>
+                    <Grid item xs={6} className={uiClasses.moduleHeader}>
                         <Checkbox
-                            checked={optionsContext?.pluck?.enabled}
+                            checked={optionsContext?.noise?.enabled}
                             className={uiClasses.smallCheckbox}
                             onChange={onSwitchConnected()}
                         />
                         <Typography variant="button" className={uiClasses.moduleHeaderText}>
-                            PLUCK
-                        </Typography>
-                    </Grid>
-                </Grid>
-
-                <Grid container>
-                    <Grid item xs={4}>
-                        <Knob
-                            unlockDistance={0}
-                            preciseMode={true}
-                            defaultValue={attackNoise}
-                            min={0.1}
-                            step={0.1}
-                            skin={skins.s12}
-                            max={20}
-                            className={uiClasses.knob}
-                            value={attackNoise}
-                            onChange={onAttackNoiseChange()}
-                            rotateDegrees={180}
-                            style={{
-                                width: '35px',
-                                height: '35px',
-                            }}
-                        />
-                        <Typography variant="caption" className={uiClasses.smallCaption}>
                             NOISE
                         </Typography>
                     </Grid>
-                    <Grid item xs={4}>
-                        <Knob
-                            unlockDistance={0}
-                            preciseMode={true}
-                            defaultValue={dampening}
-                            min={0}
-                            step={1}
-                            skin={skins.s12}
-                            max={10000}
-                            className={uiClasses.knob}
-                            value={dampening}
-                            onChange={onDampeningChange()}
-                            rotateDegrees={180}
-                            style={{
-                                width: '35px',
-                                height: '35px',
-                            }}
-                        />
-                        <Typography variant="caption" className={uiClasses.smallCaption}>
-                            DAMP (Hz)
-                        </Typography>
-                    </Grid>
-                    <Grid item xs={4}>
-                        <Knob
-                            unlockDistance={0}
-                            preciseMode={true}
-                            defaultValue={release}
-                            min={0}
-                            step={0.1}
-                            skin={skins.s12}
-                            max={2}
-                            className={uiClasses.knob}
-                            value={release}
-                            onChange={onReleaseChange()}
-                            rotateDegrees={180}
-                            style={{
-                                width: '35px',
-                                height: '35px',
-                            }}
-                        />
-                        <Typography variant="caption" className={uiClasses.smallCaption}>
-                            RELEASE (sec)
-                        </Typography>
+                    <Grid item xs={6} className={`${uiClasses.shiftRight} ${uiClasses.moduleHeaderActions}`}>
+                        <Select
+                            variant="outlined"
+                            value={type}
+                            className={uiClasses.smallSelect}
+                            onChange={onTypeChange()}
+                        >
+                            {Object.keys(NoiseType).map((key: any) => (
+                                <MenuItem key={key} value={(NoiseType as any)[key]}>
+                                    {(NoiseType as any)[key]}
+                                </MenuItem>
+                            ))}
+                        </Select>
                     </Grid>
                 </Grid>
 
@@ -206,7 +126,7 @@ export const Pluck = () => {
                             <FormControlLabel
                                 control={
                                     <Switch
-                                        checked={optionsContext?.pluck.enableRoutingFX}
+                                        checked={optionsContext?.noise.enableRoutingFX}
                                         onChange={onSwitch('enableRoutingFX')}
                                         color="primary"
                                     />
@@ -217,7 +137,7 @@ export const Pluck = () => {
                             <FormControlLabel
                                 control={
                                     <Switch
-                                        checked={optionsContext?.pluck.enableRoutingFilter}
+                                        checked={optionsContext?.noise.enableRoutingFilter}
                                         onChange={onSwitch('enableRoutingFilter')}
                                         color="primary"
                                     />
